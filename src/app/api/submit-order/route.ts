@@ -267,7 +267,7 @@ export async function POST(request: Request) {
         try {
             // Check if customer exists
             const [customers] = await connection.query<RowDataPacket[]>(
-                'SELECT * FROM Customer WHERE PhoneNumber = ?',
+                'SELECT * FROM customer WHERE PhoneNumber = ?',
                 [phoneNumber]
             );
 
@@ -281,7 +281,7 @@ export async function POST(request: Request) {
 
                 // Check if email exists
                 const [existingEmails] = await connection.query<RowDataPacket[]>(
-                    'SELECT PhoneNumber FROM Customer WHERE EmailID = ?',
+                    'SELECT PhoneNumber FROM customer WHERE EmailID = ?',
                     [emailId]
                 );
 
@@ -293,7 +293,7 @@ export async function POST(request: Request) {
 
                 // Insert new customer
                 await connection.query<ResultSetHeader>(
-                    'INSERT INTO Customer (PhoneNumber, EmailID) VALUES (?, ?)',
+                    'INSERT INTO customer (PhoneNumber, EmailID) VALUES (?, ?)',
                     [phoneNumber, emailId]
                 );
             } else {
@@ -302,7 +302,7 @@ export async function POST(request: Request) {
                 if (emailId.trim() && emailId !== storedEmail) {
                     // Check if new email exists
                     const [existingEmails] = await connection.query<RowDataPacket[]>(
-                        'SELECT PhoneNumber FROM Customer WHERE EmailID = ? AND PhoneNumber != ?',
+                        'SELECT PhoneNumber FROM customer WHERE EmailID = ? AND PhoneNumber != ?',
                         [emailId, phoneNumber]
                     );
 
@@ -314,7 +314,7 @@ export async function POST(request: Request) {
 
                     // Update email
                     await connection.query(
-                        'UPDATE Customer SET EmailID = ? WHERE PhoneNumber = ?',
+                        'UPDATE customer SET EmailID = ? WHERE PhoneNumber = ?',
                         [emailId, phoneNumber]
                     );
                 } else {
@@ -324,7 +324,7 @@ export async function POST(request: Request) {
 
             // Insert transaction
             const [result] = await connection.query<ResultSetHeader>(
-                'INSERT INTO Transaction (TransactionDate, CustomerPhoneNumber, TotalAmount) VALUES (?, ?, ?)',
+                'INSERT INTO transaction (TransactionDate, CustomerPhoneNumber, TotalAmount) VALUES (?, ?, ?)',
                 [formattedDate, phoneNumber, total]
             );
             const transactionId = result.insertId;
@@ -332,19 +332,19 @@ export async function POST(request: Request) {
             // Insert order details
             for (const item of items) {
                 await connection.query(
-                    'INSERT INTO OrderDetails (ItemID, TransactionID, Quantity, Price) VALUES (?, ?, ?, ?)',
+                    'INSERT INTO orderdetails (ItemID, TransactionID, Quantity, Price) VALUES (?, ?, ?, ?)',
                     [item.ItemID, transactionId, item.Quantity, item.Price]
                 );
             }
 
             // Update TotalSpent and check for reward
             const [updateResult] = await connection.query<ResultSetHeader>(
-                'UPDATE Customer SET TotalSpent = TotalSpent + ? WHERE PhoneNumber = ?',
+                'UPDATE customer SET TotalSpent = TotalSpent + ? WHERE PhoneNumber = ?',
                 [total, phoneNumber]
             );
 
             const [customerData] = await connection.query<RowDataPacket[]>(
-                'SELECT TotalSpent FROM Customer WHERE PhoneNumber = ?',
+                'SELECT TotalSpent FROM customer WHERE PhoneNumber = ?',
                 [phoneNumber]
             );
             const totalSpent = customerData[0].TotalSpent;
