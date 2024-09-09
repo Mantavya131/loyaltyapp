@@ -41,13 +41,19 @@ export default function OrderConfirmation() {
       <h1 className="text-3xl font-bold mb-8">Order Confirmation</h1>
       {customerInfo ? (
         <div className="text-center mb-8">
-          <p className="text-xl font-bold mb-4">
+          {/* <p className="text-xl font-bold mb-4">
             {customerInfo.isRepeating 
               ? `Welcome back! This is your ${customerInfo.visitCount}${getOrdinal(customerInfo.visitCount)} visit.`
               : "Welcome! This is your first visit."}
-
-
-
+          </p> */}
+          <p className="text-xl font-bold mb-4">
+            {customerInfo.isRepeating 
+              ? (
+                <>
+                  Welcome back! This is your {customerInfo.visitCount}
+                  {getOrdinal(customerInfo.visitCount)} visit.
+                </>
+              ) : "Welcome! This is your first visit."}
           </p>
           <p className="text-xl font-bold mb-4">
             Total spent so far: ${Number(customerInfo.totalSpent).toFixed(2)}
