@@ -55,7 +55,7 @@ export default function OrderConfirmation() {
                 Your last visit was on: {format(new Date(customerInfo.lastVisitDate), 'MMMM d, yyyy')}
               </p>
               <p className="text-lg mb-4">
-                It's been {customerInfo.daysSinceLastVisit} days since your last visit.
+                It has been {customerInfo.daysSinceLastVisit} days since your last visit.
               </p>
             </>
           )}
