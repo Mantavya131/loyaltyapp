@@ -43,7 +43,7 @@ export default function OrderConfirmation() {
         <div className="text-center mb-8">
           <p className="text-xl font-bold mb-4">
             {customerInfo.isRepeating 
-              ? "Welcome back! This is your ${customerInfo.visitCount}${getOrdinal(customerInfo.visitCount)} visit."
+              ? `Welcome back! This is your ${customerInfo.visitCount}${getOrdinal(customerInfo.visitCount)} visit.`
               : "Welcome! This is your first visit."}
           </p>
           
@@ -53,7 +53,7 @@ export default function OrderConfirmation() {
           {customerInfo.isRepeating && customerInfo.lastVisitDate && (
             <>
               <p className="text-lg mb-2">
-                Your last visit was on: {format(new Date(customerInfo.lastVisitDate), 'MMMM d, yyyy')}
+                Your last visit was on: {format(new Date(customerInfo.lastVisitDate), "MMMM d, yyyy")}
               </p>
               <p className="text-lg mb-4">
                 It has been {customerInfo.daysSinceLastVisit} days since your last visit.
