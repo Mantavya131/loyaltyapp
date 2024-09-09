@@ -10,7 +10,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const connection = await pool.getConnection();
     
     // Instead of deleting, update the isDeleted flag
-    await connection.query('UPDATE Menu SET isDeleted = TRUE WHERE ItemID = ?', [id]);
+    await connection.query('UPDATE menu SET isDeleted = TRUE WHERE ItemID = ?', [id]);
     
     connection.release();
     return NextResponse.json({ message: 'Menu item marked as deleted successfully' });

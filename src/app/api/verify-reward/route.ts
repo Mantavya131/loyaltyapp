@@ -8,7 +8,7 @@ export async function POST(request: Request) {
 
   try {
     const [reward] = await connection.query<RowDataPacket[]>(
-      'SELECT * FROM Rewards WHERE Reward_id = ?',
+      'SELECT * FROM rewards WHERE Reward_id = ?',
       [rewardCode]
     );
 
@@ -21,15 +21,15 @@ export async function POST(request: Request) {
     }
 
     await connection.query<ResultSetHeader>(
-      'UPDATE Rewards SET Flag = TRUE WHERE Reward_id = ?',
+      'UPDATE rewards SET Flag = TRUE WHERE Reward_id = ?',
       [rewardCode]
     );
 
     const [favoriteItem] = await connection.query<RowDataPacket[]>(`
     
          SELECT m.ItemName
-         FROM OrderDetails od
-         JOIN Transaction t ON od.TransactionID = t.TransactionID
+         FROM orderdetails od
+         JOIN transaction t ON od.TransactionID = t.TransactionID
          JOIN menu m ON od.ItemID = m.ItemID
          WHERE t.CustomerPhoneNumber = ?
          GROUP BY m.ItemName

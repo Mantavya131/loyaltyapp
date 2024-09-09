@@ -19,11 +19,11 @@ export async function GET(request: Request) {
             `SELECT 
                 COUNT(*) as visitCount, 
                 (SELECT TransactionDate 
-                 FROM Transaction 
+                 FROM transaction 
                  WHERE CustomerPhoneNumber = ? 
                  ORDER BY TransactionDate DESC 
                  LIMIT 1 OFFSET 1) as lastVisitDate
-            FROM Transaction 
+            FROM transaction 
             WHERE CustomerPhoneNumber = ?`,
             [phoneNumber, phoneNumber]
         );
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 
         // Get total spent
         const [totalSpentResult] = await connection.query<RowDataPacket[]>(
-            'SELECT SUM(TotalAmount) as totalSpent FROM Transaction WHERE CustomerPhoneNumber = ?',
+            'SELECT SUM(TotalAmount) as totalSpent FROM transaction WHERE CustomerPhoneNumber = ?',
             [phoneNumber]
         );
         const totalSpent = totalSpentResult[0].totalSpent || 0;

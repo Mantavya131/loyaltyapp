@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         for (const item of items) {
             try {
                 await connection.query(
-                    'INSERT INTO Menu (ItemName, Price) VALUES (?, ?)',
+                    'INSERT INTO menu (ItemName, Price) VALUES (?, ?)',
                     [item.ItemName, item.Price]
                 );
                 addedItems.push(item.ItemName);

@@ -219,9 +219,9 @@ const transporter = nodemailer.createTransport({
         const [favoriteItem] = await connection.query(`
             
             SELECT m.ItemName 
-            FROM OrderDetails od
-            JOIN Transaction t ON od.TransactionID = t.TransactionID
-            JOIN Menu m ON od.ItemID = m.ItemID
+            FROM orderdetails od
+            JOIN transaction t ON od.TransactionID = t.TransactionID
+            JOIN menu m ON od.ItemID = m.ItemID
             WHERE t.CustomerPhoneNumber = ?
             GROUP BY m.ItemName
             ORDER BY COUNT(*) DESC, MAX(t.TransactionDate) DESC
@@ -234,12 +234,12 @@ const transporter = nodemailer.createTransport({
 
           const rewardCode = crypto.randomBytes(10).toString('hex');
           const result = await connection.query(
-            'INSERT INTO Rewards (Reward_id, Rewarded_Customer_Ph_Number) VALUES (?, ?)',
+            'INSERT INTO rewards (Reward_id, Rewarded_Customer_Ph_Number) VALUES (?, ?)',
             [rewardCode, phoneNumber]
           ) as ResultSetHeader;
 
           const [customerEmail] = await connection.query(
-            'SELECT EmailID FROM Customer WHERE PhoneNumber = ?',
+            'SELECT EmailID FROM customer WHERE PhoneNumber = ?',
             [phoneNumber]
           ) as [RowDataPacket[]];
 
