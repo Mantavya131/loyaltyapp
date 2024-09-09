@@ -43,8 +43,8 @@ export default function OrderConfirmation() {
         <div className="text-center mb-8">
           <p className="text-xl font-bold mb-4">
             {customerInfo.isRepeating 
-              ? `Welcome back! This is your ${customerInfo.visitCount}${getOrdinal(customerInfo.visitCount)} visit.`
-              : `Welcome! This is your first visit.`}
+              ? "Welcome back! This is your ${customerInfo.visitCount}${getOrdinal(customerInfo.visitCount)} visit."
+              : "Welcome! This is your first visit."}
           </p>
           
           <p className="text-xl font-bold mb-4">
