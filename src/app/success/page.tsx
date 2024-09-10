@@ -1,3 +1,5 @@
+// /src/app/success/pages.tsx
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -42,6 +44,8 @@ export default function SuccessPage() {
       console.error('Error fetching menu items:', error);
     }
   };
+
+  
 
   const handleAddItem = () => {
     if (selectedItem && quantity > 0) {

@@ -1,3 +1,5 @@
+// /src/app/api/deleteMenuItem/[id]/route.ts
+
 import { NextResponse } from 'next/server';
 import pool from '../../../../../db';
 
