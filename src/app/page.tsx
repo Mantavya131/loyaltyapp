@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import useSWR from 'swr';
 
 interface MenuItem {
   ItemID: number;
@@ -12,18 +13,23 @@ interface MenuItem {
   Price: number;
 }
 
+const fetcher = (url: string) => axios.get(url).then(res => res.data);
+
 export default function Home() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [editMode, setEditMode] = useState(false);
-  const [currentMenu, setCurrentMenu] = useState<MenuItem[]>([]);
   const router = useRouter();
+
+  const { data: currentMenu, error, mutate } = useSWR<MenuItem[]>('/api/getMenu', fetcher, {
+    refreshInterval: 5000 // Refresh every 5 seconds
+  });
 
   const addItem = () => {
     if (itemName && itemPrice) {
       const newItem: MenuItem = {
-        ItemID: Date.now(), // Temporary ID, will be replaced by database
+        ItemID: Date.now(),
         ItemName: itemName,
         Price: parseFloat(itemPrice)
       };
@@ -38,16 +44,15 @@ export default function Home() {
       const response = await axios.post('/api/submit-menu', items);
       if (response.data.duplicates && response.data.duplicates.length > 0) {
         alert(`The following items already exist and were not added: ${response.data.duplicates.join(', ')}`);
-        // Remove duplicate items from the local state
         setItems(items.filter(item => !response.data.duplicates.includes(item.ItemName)));
       }
       if (response.data.addedItems && response.data.addedItems.length > 0) {
         console.log(response.data.message);
         alert(`Successfully added ${response.data.addedItems.length} item(s) to the menu.`);
-        setItems([]);  // Clear all items after successful submission
-        fetchMenu(); // Refresh the current menu after submission
         
-        router.push('/success');      // Navigate to the success page
+        setItems([]);
+        await mutate(); // Trigger a re-fetch of the menu data
+        router.push('/success');
       }
     } catch (error) {
       console.error('Error submitting menu:', error);
@@ -55,39 +60,17 @@ export default function Home() {
     }
   };
 
-  const fetchMenu = async () => {
-    try {
-      console.log('Fetching menu...');
-      const response = await axios.get('/api/getMenu');
-      console.log('API response:', response.data);
-      setCurrentMenu(response.data);
-      console.log('Set current menu to:', response.data);
-    } catch (error) {
-      console.error('Error fetching menu:', error);
-    }
-  };
-
-  useEffect(() => {
-    console.log('Current menu state updated:', currentMenu);
-  }, [currentMenu]);
-
   const deleteMenuItem = async (id: number) => {
     try {
       await axios.delete(`/api/deleteMenuItem/${id}`);
-      fetchMenu();
+      await mutate(); // Trigger a re-fetch of the menu data
     } catch (error) {
       console.error('Error deleting menu item:', error);
     }
   };
 
-  // const updateMenuItem = async (id: number, name: string, price: string) => {
-  //   try {
-  //     await axios.put(`/api/updateMenuItem/${id}`, { ItemName: name, Price: price });
-  //     fetchMenu();
-  //   } catch (error) {
-  //     console.error('Error updating menu item:', error);
-  //   }
-  // };
+  if (error) return <div>Failed to load menu</div>;
+  if (!currentMenu) return <div>Loading...</div>;
 
   return (
     <main className="p-4">
@@ -131,10 +114,7 @@ export default function Home() {
         Submit Menu
       </button>
       <button 
-        onClick={() => {
-          setEditMode(true);
-          fetchMenu();
-        }} 
+        onClick={() => setEditMode(true)} 
         className="bg-yellow-500 text-white p-2">
         Manage Menu
       </button>
@@ -162,12 +142,6 @@ export default function Home() {
                     >
                       Delete
                     </button>
-                    {/* <button 
-                      onClick={() => updateMenuItem(item.ItemID, item.ItemName, item.Price.toString())}
-                      className="bg-blue-500 text-white p-1"
-                    >
-                      Edit
-                    </button> */}
                   </td>
                 </tr>
               ))}
@@ -176,7 +150,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Add this new button at the bottom */}
       <div className="mt-8">
         <button 
           onClick={() => router.push('/success')}
