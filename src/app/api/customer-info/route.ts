@@ -1,3 +1,5 @@
+//src/app/api/customer-info/route.ts
+
 import { NextResponse } from 'next/server';
 import pool from './../../../../db';
 import { RowDataPacket } from 'mysql2';

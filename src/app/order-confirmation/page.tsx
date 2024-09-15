@@ -80,6 +80,8 @@
 //   return (s[(v - 20) % 10] || s[v] || s[0]);
 // }
 //--------------------------------------------------------------------------------------------------------
+//src/app/order-confirmation/page.tsx
+
 'use client'
 
 import React, { useState, useEffect, Suspense } from 'react';

@@ -1,3 +1,5 @@
+//src/app/api/verify-reward/route.ts
+
 import { NextResponse } from 'next/server';
 import pool from './../../../../db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
