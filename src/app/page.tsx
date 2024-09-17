@@ -1,10 +1,8 @@
 // /src/app/pages.tsx
 
-
-
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
@@ -20,14 +18,30 @@ export default function Home() {
   const [itemPrice, setItemPrice] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [currentMenu, setCurrentMenu] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Fetch menu items
+  const fetchMenu = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('/api/getMenu', { headers: { 'Cache-Control': 'no-cache' } });
+      setCurrentMenu(response.data);
+    } catch (error) {
+      console.error('Error fetching menu:', error);
+      alert('Error fetching menu. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add a new item to the local state
   const addItem = () => {
     if (itemName && itemPrice) {
       const newItem: MenuItem = {
-        ItemID: Date.now(), // Temporary ID, will be replaced by database
+        ItemID: Date.now(), // Temporary ID; it will be replaced by the database-generated ID
         ItemName: itemName,
-        Price: parseFloat(itemPrice)
+        Price: parseFloat(itemPrice),
       };
       setItems([...items, newItem]);
       setItemName('');
@@ -35,31 +49,7 @@ export default function Home() {
     }
   };
 
-  const fetchMenu = useCallback(async () => {
-    try {
-      console.log('Fetching menu...');
-      const response = await axios.get('/api/getMenu');
-      console.log('API response:', response.data);
-      setCurrentMenu(response.data);
-      console.log('Set current menu to:', response.data);
-    } catch (error) {
-      console.error('Error fetching menu:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchMenu();
-  }, [fetchMenu]);
-
-  const deleteMenuItem = async (id: number) => {
-    try {
-      await axios.delete(`/api/deleteMenuItem/${id}`);
-      fetchMenu();
-    } catch (error) {
-      console.error('Error deleting menu item:', error);
-    }
-  };
-
+  // Submit the new menu items to the backend
   const submitMenu = async () => {
     try {
       const response = await axios.post('/api/submit-menu', items);
@@ -69,12 +59,10 @@ export default function Home() {
         setItems(items.filter(item => !response.data.duplicates.includes(item.ItemName)));
       }
       if (response.data.addedItems && response.data.addedItems.length > 0) {
-        console.log(response.data.message);
         alert(`Successfully added ${response.data.addedItems.length} item(s) to the menu.`);
-        setItems([]);  // Clear all items after successful submission
-        fetchMenu(); // Refresh the current menu after submission
-        
-        router.push('/success');      // Navigate to the success page
+        setItems([]); // Clear the local state after successful submission
+        fetchMenu();  // Refresh the menu after submission
+        router.push('/success');  // Navigate to the success page
       }
     } catch (error) {
       console.error('Error submitting menu:', error);
@@ -82,7 +70,20 @@ export default function Home() {
     }
   };
 
-  
+  // Delete a menu item by ID
+  const deleteMenuItem = async (id: number) => {
+    try {
+      await axios.delete(`/api/deleteMenuItem/${id}`);
+      fetchMenu();  // Refresh the menu after deletion
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      alert('Error deleting menu item. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    fetchMenu(); // Fetch the current menu items on component mount
+  }, []);
 
   return (
     <main className="p-4">
@@ -106,6 +107,7 @@ export default function Home() {
           Add Item
         </button>
       </div>
+
       <table className="w-full mb-4">
         <thead>
           <tr>
@@ -122,53 +124,58 @@ export default function Home() {
           ))}
         </tbody>
       </table>
+
       <button onClick={submitMenu} className="bg-green-500 text-white p-2 mr-2">
         Submit Menu
       </button>
-      <button 
+      <button
         onClick={() => {
           setEditMode(true);
           fetchMenu();
-        }} 
-        className="bg-yellow-500 text-white p-2">
+        }}
+        className="bg-yellow-500 text-white p-2"
+      >
         Manage Menu
       </button>
 
       {editMode && (
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-2">Current Menu</h2>
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentMenu.map((item) => (
-                <tr key={item.ItemID}>
-                  <td>{item.ItemName}</td>
-                  <td>{item.Price}</td>
-                  <td>
-                    <button 
-                      onClick={() => deleteMenuItem(item.ItemID)}
-                      className="bg-red-500 text-white p-1 mr-1"
-                    >
-                      Delete
-                    </button>
-                    
-                  </td>
+          {loading ? (
+            <p>Loading menu...</p>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentMenu.map((item) => (
+                  <tr key={item.ItemID}>
+                    <td>{item.ItemName}</td>
+                    <td>{item.Price}</td>
+                    <td>
+                      <button
+                        onClick={() => deleteMenuItem(item.ItemID)}
+                        className="bg-red-500 text-white p-1 mr-1"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
-      {/* Add this new button at the bottom */}
+      {/* Link to the order page */}
       <div className="mt-8">
-        <button 
+        <button
           onClick={() => router.push('/success')}
           className="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 transition duration-300"
         >
